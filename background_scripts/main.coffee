@@ -22,6 +22,9 @@ frameIdsForTab = {}
 portsForTab = {}
 root.urlForTab = {}
 
+lastTargetWindowId = null
+yankedTabIds = []
+
 # This is exported for use by "marks.coffee".
 root.tabLoadedHandlers = {} # tabId -> function()
 
@@ -182,6 +185,27 @@ BackgroundCommands =
       [ tab, tabs... ] = tabs[startTabIndex...startTabIndex + count]
       chrome.windows.create {tabId: tab.id, incognito: tab.incognito}, (window) ->
         chrome.tabs.move (tab.id for tab in tabs), {windowId: window.id, index: -1}
+        lastTargetWindowId = window.id
+  moveTabToNextWindow: ({count, tab}) ->
+    listTabs tab.index, count, (tabIds) ->
+      moveTabWindowDirection tabIds, 1, (windowId) ->
+        lastTargetWindowId = windowId
+  moveTabToPrevWindow: ({count, tab}) ->
+    listTabs tab.index, count, (tabIds) ->
+      moveTabWindowDirection tabIds, -1, (windowId) ->
+        lastTargetWindowId = windowId
+  yankTabToMove: ({count, tab}) ->
+    listTabs tab.index, count, (tabIds) ->
+      yankedTabIds = tabIds
+  # Not a background command really?
+  moveYankedTabToWindow: ({count, tab}) ->
+    chrome.windows.getLastFocused null, (window) ->
+      chrome.tabs.move yankedTabIds, {windowId: window.id, index: -1}
+      yankedTabIds = []
+      lastTargetWindowId = window.id
+  moveTabToLastTargetWindow: ({count, tab}) ->
+    listTabs tab.index, count, (tabIds) ->
+      chrome.tabs.move tabIds, {windowId: lastTargetWindowId, index: -1}
   nextTab: (request) -> selectTab "next", request
   previousTab: (request) -> selectTab "previous", request
   firstTab: (request) -> selectTab "first", request
@@ -208,6 +232,21 @@ BackgroundCommands =
     tabIds = BgUtils.tabRecency.getTabsByRecency().filter (tabId) -> tabId != tab.id
     if 0 < tabIds.length
       selectSpecificTab id: tabIds[(count-1) % tabIds.length]
+
+# List a number of tabs on the current window
+listTabs = (index, count, callback) ->
+  chrome.tabs.query {currentWindow: true}, (tabs) ->
+    startTabIndex = Math.max 0, Math.min index, tabs.length - count
+    tabIds = (tab.id for tab in tabs[startTabIndex...startTabIndex + count])
+    callback tabIds
+
+moveTabWindowDirection = (tabIds, offset, callback) ->
+  chrome.windows.getLastFocused null, (lastWindow) ->
+    chrome.windows.getAll null, (windows) ->
+      index = (window.id for window in windows).indexOf(lastWindow.id)
+      if windows[index + offset]
+        chrome.tabs.move tabIds, {windowId: windows[index + offset].id, index: -1}
+        callback windows[index + offset].id
 
 # Remove tabs before, after, or either side of the currently active tab
 removeTabsRelative = (direction, {tab: activeTab}) ->

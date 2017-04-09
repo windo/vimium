@@ -194,6 +194,11 @@ Commands =
       "removeTab",
       "restoreTab",
       "moveTabToNewWindow",
+      "moveTabToNextWindow",
+      "moveTabToPrevWindow",
+      "yankTabToMove",
+      "moveYankedTabToWindow",
+      "moveTabToLastTargetWindow",
       "closeTabsOnLeft","closeTabsOnRight",
       "closeOtherTabs",
       "moveTabLeft",
@@ -209,6 +214,11 @@ Commands =
     "scrollToLeft",
     "scrollToRight",
     "moveTabToNewWindow",
+    "moveTabToNextWindow",
+    "moveTabToPrevWindow",
+    "yankTabToMove",
+    "moveYankedTabToWindow",
+    "moveTabToLastTargetWindow",
     "goUp",
     "goToRoot",
     "LinkHints.activateModeWithQueue",
@@ -287,6 +297,11 @@ defaultKeyMappings =
   "g$": "lastTab"
 
   "W": "moveTabToNewWindow"
+  "wn": "moveTabToNextWindow"
+  "wp": "moveTabToPrevWindow"
+  "yT": "yankTabToMove"
+  "p": "moveYankedTabToWindow"
+  "R": "moveTabToLastTargetWindow"
   "t": "createTab"
   "yt": "duplicateTab"
   "x": "removeTab"
@@ -383,6 +398,11 @@ commandDescriptions =
   restoreTab: ["Restore closed tab", { background: true, repeatLimit: 20 }]
 
   moveTabToNewWindow: ["Move tab to new window", { background: true }]
+  moveTabToNextWindow: ["Move tab to next window", { background: true }]
+  moveTabToPrevWindow: ["Move tab to previous window", { background: true }]
+  yankTabToMove: ["Mark tab to be moved to another window", {background: true}]
+  moveYankedTabToWindow: ["Move marked tabs to current window", {background: true}]
+  moveTabToLastTargetWindow: ["(Repeat) move tab to last tab move target window", {background: true}]
   togglePinTab: ["Pin or unpin current tab", { background: true, noRepeat: true }]
   toggleMuteTab: ["Mute or unmute current tab", { background: true, noRepeat: true }]
 
